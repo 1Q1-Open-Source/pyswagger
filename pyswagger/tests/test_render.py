@@ -13,6 +13,8 @@ import string
 import datetime
 import json
 import io
+import base64
+import random
 
 
 class StringTestCase(unittest.TestCase):
@@ -622,3 +624,58 @@ class OperationTestCase(unittest.TestCase):
         for _ in six.moves.xrange(50):
             ps = self.rnd.render_all(op, exclude=['p1'], opt=opt)
             self.assertTrue('p1' not in ps, 'p1 should be excluded')
+
+
+class PresetMinimalTestCase(unittest.TestCase):
+    """ Tests for the opt-in 'minimal' renderer preset (Step 4) """
+
+    @classmethod
+    def setUpClass(kls):
+        # reuse existing test data sets
+        kls.app_str = App.create(get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'string')
+        ))
+        kls.app_obj = App.create(get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'object')
+        ))
+        kls.app_op = App.create(get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'operation')
+        ))
+        kls.rnd = Renderer()
+
+    def test_minimal_preset_required_only_object(self):
+        opt = self.rnd.default('minimal')
+        # ensure flags are enabled by preset
+        self.assertTrue(opt['minimal_property'])
+        o = self.rnd.render(self.app_obj.resolve('#/definitions/user'), opt=opt)
+        self.assertTrue('id' in o and 'name' in o, 'required fields should exist')
+        self.assertTrue('email' not in o, 'optional field should be omitted under minimal')
+
+    def test_minimal_preset_required_only_params(self):
+        # Operation with all optional query params: p1, p2, p3
+        op = self.app_op.s('api.2').get
+        opt = self.rnd.default('minimal')
+        ps = self.rnd.render_all(op, opt=opt)
+        self.assertTrue('p1' not in ps and 'p2' not in ps and 'p3' not in ps, 'all optional params omitted under minimal')
+
+    def test_minimal_preset_bounds_string_and_bytes(self):
+        # strings without explicit maxLength should honor lower preset bound (32)
+        random.seed(0)
+        opt = self.rnd.default('minimal')
+        s = self.rnd.render(self.app_str.resolve('#/definitions/string.1'), opt=opt)
+        self.assertTrue(len(s) <= opt['max_str_length'] and opt['max_str_length'] == 32)
+
+        # bytes length bound applies to raw decoded bytes
+        bt = self.rnd.render(self.app_str.resolve('#/definitions/byte.1'), opt=opt)
+        raw = base64.b64decode(bt)
+        self.assertTrue(len(raw) <= opt['max_byte_length'] and opt['max_byte_length'] == 32)
+
+    def test_minimal_preset_templates_override(self):
+        opt = self.rnd.default('minimal')
+        opt['object_template'].update({'email': 'user@example.com'})
+        o = self.rnd.render(self.app_obj.resolve('#/definitions/user'), opt=opt)
+        # Even though 'email' is optional, template should force its presence
+        self.assertEqual(o.get('email'), 'user@example.com')

@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ..spec.v2_0.objects import Parameter, Operation, Schema
 from ..utils import deref, final, from_iso8601
 from decimal import Decimal
+import copy
 import random
 import six
 import sys
@@ -227,8 +228,43 @@ class Renderer(object):
 
         return out
 
+    # Preset configurations for renderer options. These are non-breaking and opt-in.
+    # - classic: mirrors existing defaults (backward compatible)
+    # - minimal: emphasizes required-only output and smaller payloads
+    PRESETS = {
+        'classic': dict(
+            max_name_length=64,
+            max_prop_count=32,
+            max_str_length=100,
+            max_byte_length=100,
+            max_array_length=100,
+            max_file_length=200,
+            minimal_property=False,
+            minimal_parameter=False,
+            files=[],
+            object_template={},
+            parameter_template={},
+            max_property=False,
+            max_parameter=False,
+        ),
+        # Only override values that differ from classic
+        'minimal': dict(
+            # Enable required-only for properties/parameters unless templates override
+            minimal_property=True,
+            minimal_parameter=True,
+            # Modestly lower caps to keep generated examples concise
+            max_prop_count=16,
+            max_str_length=32,
+            max_byte_length=32,
+            max_array_length=16,
+            max_file_length=64,
+            # Keep name length reasonable for generated additionalProperties keys
+            max_name_length=32,
+        ),
+    }
+
     @staticmethod
-    def default():
+    def default(preset=None):
         """ return default options, available options:
         - max_name_length: maximum length of name for additionalProperties
         - max_prop_count: maximum count of properties (count of fixed properties + additional properties)
@@ -243,25 +279,32 @@ class Renderer(object):
         - parameter_template: dict of default values assigned for parameters when 'name matched
         - max_property: all properties are generated, ignore 'required'
         - max_parameter: all parameters are generated, ignore 'required'
+        - preset: optional; choose between "classic" (default behavior) and "minimal" (opt-in)
 
         :return: options
         :rtype: dict
         """
-        return dict(
-            max_name_length=64,
-            max_prop_count=32,
-            max_str_length=100,
-            max_byte_length=100,
-            max_array_length=100,
-            max_file_length=200,
-            minimal_property=False,
-            minimal_parameter=False,
-            files=[],
-            object_template={},
-            parameter_template={},
-            max_property=False,
-            max_parameter=False,
-        )
+        # Start from classic defaults to preserve backward compatibility.
+        # Use deepcopy to avoid sharing nested mutable values across calls.
+        base = copy.deepcopy(Renderer.PRESETS['classic'])
+        if preset is None:
+            return base
+
+        # Accept both preset name and mapping for flexibility
+        if isinstance(preset, six.string_types):
+            p = Renderer.PRESETS.get(preset)
+            if p is None:
+                raise ValueError('Unknown preset: {0}'.format(preset))
+            # Merge preset values; classic provides the full shape
+            base.update(p)
+            return base
+
+        if isinstance(preset, dict):
+            # Merge custom overrides provided by caller
+            base.update(preset)
+            return base
+
+        raise ValueError('Invalid preset type: {0}'.format(type(preset)))
 
     def render(self, obj, opt=None):
         """ render a Schema/Parameter

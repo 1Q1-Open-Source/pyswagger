@@ -13,6 +13,13 @@
     - Accept `uuid.UUID` instances directly, serializing outbound values to canonical strings.
     - Validate UUID strings using the standard hyphenated RFC 4122 form; reject non-hyphenated 32-hex strings and malformed values.
 
+- Renderer presets (Step 4)
+  - Introduce opt-in renderer presets to control output size and strictness without changing existing defaults.
+  - Presets:
+    - `classic` (default behavior): mirrors historical defaults.
+    - `minimal` (opt-in): generates required-only properties/parameters and applies smaller caps (e.g., strings/arrays/bytes) for concise examples.
+  - API: `Renderer.default(preset=None|"classic"|"minimal")` or pass the returned options to `render`/`render_all` via the existing `opt` parameter. Default behavior remains unchanged unless a preset is explicitly selected.
+
 ### 0.8.39
 
 - Fix the issue that case insensitive keys in headers not working
