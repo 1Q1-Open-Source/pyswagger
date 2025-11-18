@@ -2,14 +2,14 @@ from __future__ import absolute_import
 from .consts import private
 from .errs import CycleDetectionError
 import six
-import imp
 import sys
 import datetime
 import re
 import os
 import operator
 import functools
-import collections
+from collections.abc import MutableMapping
+import importlib
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -127,12 +127,12 @@ class FixedTZ(datetime.tzinfo):
         return datetime.timedelta(0)
 
 _iso8601_fmt = re.compile(''.join([
-    '(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})', # YYYY-MM-DD
-    'T', # T
-    '(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2})(\.(?P<microsecond>\d{1,6}))?)?', # hh:mm:ss.ms
-    '(?P<tz>Z|[+-]\d{2}:\d{2})?' # Z or +/-hh:mm
+    r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})',  # YYYY-MM-DD
+    r'T',  # T
+    r'(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2})(\.(?P<microsecond>\d{1,6}))?)?',  # hh:mm:ss.ms
+    r'(?P<tz>Z|[+-]\d{2}:\d{2})?',  # Z or +/-hh:mm
 ]))
-_iso8601_fmt_date = re.compile('(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})') # YYYY-MM-DD
+_iso8601_fmt_date = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})')  # YYYY-MM-DD
 
 def from_iso8601(s):
     """ convert iso8601 string to datetime object.
@@ -205,29 +205,19 @@ def from_iso8601(s):
     )
 
 def import_string(name):
-    """ import module
-    """
-    mod = fp = None
+    """Import a module by name using importlib.
 
-    # code below, please refer to
-    #   https://docs.python.org/2/library/imp.html
-    # for details
+    Returns the imported module object, or None if it cannot be imported.
+    """
     try:
         return sys.modules[name]
     except KeyError:
         pass
 
     try:
-        fp, pathname, desc = imp.find_module(name)
-        mod = imp.load_module(name, fp, pathname, desc)
-    except ImportError:
-        mod = None
-    finally:
-        # Since we may exit via an exception, close fp explicitly.
-        if fp:
-            fp.close()
-
-    return mod
+        return importlib.import_module(name)
+    except Exception:
+        return None
 
 def jp_compose(s, base=None):
     """ append/encode a string to json-pointer
@@ -596,7 +586,7 @@ def patch_path(base_path, path):
     return path
 
 
-class CaseInsensitiveDict(collections.MutableMapping):
+class CaseInsensitiveDict(MutableMapping):
     """ a case insensitive dict:
         - allow to query with case insensitive keys (get, in)
         - iteration would return original key

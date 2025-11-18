@@ -5,7 +5,7 @@ from pyswagger import errs
 from uuid import uuid4
 import six
 import io, codecs
-import collections
+from collections.abc import Mapping, MutableMapping
 import logging
 
 
@@ -388,7 +388,7 @@ class Response(object):
              final(self.__op.responses.get('default', None)))
 
         if header != None:
-            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
+            if isinstance(header, (Mapping, MutableMapping)):
                 for k, v in six.iteritems(header):
                     self._convert_header(r, k, v)
             else:
