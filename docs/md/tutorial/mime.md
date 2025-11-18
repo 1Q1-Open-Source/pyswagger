@@ -3,6 +3,8 @@ Swagger operation may contain more than one MIME type.
 pyswagger allows you to specify consume/produce MIME type when sending request.
 Also, customized MIME codec is supported.
 
+Note: The media type `application/hal+json` is supported and uses the same marshal/unmarshal semantics as JSON. If a server responds with `application/hal+json` (with or without parameters like `; charset=utf-8`), it will be handled by the JSON codec.
+
 ```python
 from pyswagger import App
 from pyswagger.contrib.client.requests import Client

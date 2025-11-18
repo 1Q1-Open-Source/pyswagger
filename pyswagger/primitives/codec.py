@@ -10,6 +10,9 @@ class MimeCodec:
         jsonCodec = JsonCodec()
         self.register('application/json', jsonCodec)
         self.register('text/json', jsonCodec)
+        # Step 3: support HAL over JSON using the same semantics as JSON
+        # Content negotiation will match 'application/hal+json' (params stripped below)
+        self.register('application/hal+json', jsonCodec)
 
     def register(self, mime, codec):
         self._codecs[mime.lower()] = codec

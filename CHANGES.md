@@ -7,6 +7,12 @@
   - Response.header continues to expose values as lists (existing API), e.g., `resp.header['X-Thing'] == ['a','b']`. Single headers remain single-item lists for backward compatibility.
   - Case-insensitive header aggregation is improved to ensure mixed-case duplicates (e.g., `link` and `Link`) are combined.
 
+- Codec and format enhancements (Step 3)
+  - Add support for `application/hal+json` by reusing JSON codec semantics for marshal/unmarshal (including parameterized content types like `; charset=utf-8`).
+  - Improve UUID format handling for `type: string, format: uuid`:
+    - Accept `uuid.UUID` instances directly, serializing outbound values to canonical strings.
+    - Validate UUID strings using the standard hyphenated RFC 4122 form; reject non-hyphenated 32-hex strings and malformed values.
+
 ### 0.8.39
 
 - Fix the issue that case insensitive keys in headers not working

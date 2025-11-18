@@ -230,6 +230,22 @@ class SchemaTestCase(unittest.TestCase):
         # unsupported type - e.g. int
         self.assertRaises(ValueError, d._prim_, 123, self.app.prim_factory)
 
+    def test_uuid_invalid_string(self):
+        """ invalid uuid string should raise ValidationError """
+        d = self.app.resolve('#/definitions/uuid')
+        # non-hyphenated 32-hex string should be rejected
+        from pyswagger import errs
+        self.assertRaises(errs.ValidationError, d._prim_, '550e8400e29b41d4a716446655440000', self.app.prim_factory)
+
+    def test_uuid_uppercase_accepted(self):
+        """ uppercase UUID string in hyphenated form should be accepted """
+        d = self.app.resolve('#/definitions/uuid')
+        upper = '550E8400-E29B-41D4-A716-446655440000'
+        dv = d._prim_(upper, self.app.prim_factory)
+        self.assertTrue(isinstance(dv, primitives.UUID))
+        # canonical string is lowercase hyphenated
+        self.assertEqual(str(dv), '550e8400-e29b-41d4-a716-446655440000')
+
     def test_password(self):
         """ test string in password """
         p = self.app.resolve('#/definitions/password')
