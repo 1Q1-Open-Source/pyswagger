@@ -49,7 +49,21 @@ def pet_id(pet_id):
         if not pet:
             return "", 404
         else:
-            return json.jsonify(pet), 200
+            # Build a response with duplicate headers to verify client behavior
+            resp = json.jsonify(pet)
+            resp.status_code = 200
+            # duplicate header lines
+            resp.headers.add('X-Thing', 'a')
+            resp.headers.add('X-Thing', 'b')
+            # mixed-case duplicate header names should combine
+            resp.headers.add('Link', '<a>; rel="next"')
+            resp.headers.add('link', '<b>; rel="prev"')
+            # single header
+            resp.headers['ETag'] = 'test-etag'
+            # multiple cookies
+            resp.set_cookie('a', '1')
+            resp.set_cookie('b', '2')
+            return resp
 
 @fapp.route('/api/pet/uploadImage', methods=['POST'])
 def pet_image():
@@ -136,6 +150,16 @@ class FlaskTestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, pet_Mary)
+        # Verify headers aggregated correctly (case-insensitive keys)
+        self.assertEqual(resp.header['X-Thing'], ['a', 'b'])
+        self.assertEqual(resp.header['ETag'], ['test-etag'])
+        # Access with different case should work
+        self.assertEqual(resp.header['x-thing'], ['a', 'b'])
+        # Mixed-case duplicate names should be merged under one logical key
+        self.assertEqual(resp.header['Link'], ['<a>; rel="next"', '<b>; rel="prev"'])
+        # Set-Cookie should preserve multiple header lines
+        self.assertTrue('Set-Cookie' in resp.header)
+        self.assertTrue(len(resp.header['Set-Cookie']) >= 2)
 
     def test_uploadFile(self):
         """ uploadFile """

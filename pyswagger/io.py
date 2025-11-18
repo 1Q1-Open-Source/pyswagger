@@ -365,10 +365,10 @@ class Response(object):
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:
             v = resp.headers[k]._prim_(v, self.__op._prim_factory, ctx=dict(read=True))
-
-        if k in self.__header:
+        # Case-insensitive aggregation: always use getitem (case-insensitive)
+        try:
             self.__header[k].append(v)
-        else:
+        except KeyError:
             self.__header[k] = [v]
 
     def apply_with(self, status=None, raw=None, header=None):

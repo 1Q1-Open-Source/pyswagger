@@ -71,9 +71,24 @@ class FlaskTestClient(BaseClient):
             )
 
         # convert to Response
+        # Preserve multi-value headers (e.g., Set-Cookie, Link) by passing
+        # an iterable of (key, value) pairs including duplicates.
+        # Werkzeug's Headers supports items(multi=True) and to_wsgi_list().
+        header_items = None
+        try:
+            # Preferred when available (Werkzeug >= 0.10)
+            header_items = list(r.headers.items(multi=True))
+        except TypeError:
+            # Older Werkzeug: fallback to to_wsgi_list if present
+            if hasattr(r.headers, 'to_wsgi_list'):
+                header_items = r.headers.to_wsgi_list()
+            else:
+                # Last resort: this may collapse duplicates, but keeps compatibility
+                header_items = list(r.headers.items())
+
         resp.apply_with(
             status=r.status_code,
-            header=r.headers.items(),
+            header=header_items,
             raw=r.data
         )
 

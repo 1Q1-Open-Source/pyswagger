@@ -1,5 +1,12 @@
 ## Changes
 
+### Unreleased
+
+- Flask test client: preserve multi-value response headers
+  - When a Flask response includes repeated headers with the same name (e.g., `Set-Cookie`, `Link`), the client now forwards all occurrences to the core Response object instead of collapsing/overwriting them.
+  - Response.header continues to expose values as lists (existing API), e.g., `resp.header['X-Thing'] == ['a','b']`. Single headers remain single-item lists for backward compatibility.
+  - Case-insensitive header aggregation is improved to ensure mixed-case duplicates (e.g., `link` and `Link`) are combined.
+
 ### 0.8.39
 
 - Fix the issue that case insensitive keys in headers not working
