@@ -1,14 +1,23 @@
 from __future__ import absolute_import
+import pytest
+
+# These tests exercise the optional webapp2 client which targets Python 2.x.
+# Ensure importing this module never crashes a Py3 test run when webapp2
+# and its extras are not installed by skipping at import time.
+webapp2 = pytest.importorskip("webapp2")
+sessions = pytest.importorskip("webapp2_extras.sessions")
+
 from pyswagger import App
 from pyswagger.contrib.client.webapp2 import Webapp2TestClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
-from webapp2_extras import sessions
 import unittest
-import webapp2
 import json
 import six
 import sys
 import os
+
+# Mark the whole module so it can be easily selected/excluded.
+pytestmark = pytest.mark.webapp2
 
 
 pet_db = create_pet_db()

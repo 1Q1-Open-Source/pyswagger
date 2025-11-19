@@ -1,6 +1,7 @@
 pyswagger
 =========
 
+[![CI](https://github.com/1Q1-Open-Source/pyswagger/actions/workflows/python-package.yml/badge.svg)](https://github.com/1Q1-Open-Source/pyswagger/actions/workflows/python-package.yml)
 [![Build Status](https://travis-ci.org/mission-liao/pyswagger.svg?branch=master)](https://travis-ci.org/mission-liao/pyswagger)
 [![Coverage Status](https://coveralls.io/repos/mission-liao/pyswagger/badge.svg?branch=master&style=flat)](https://coveralls.io/r/mission-liao/pyswagger?branch=master)
 
@@ -180,11 +181,27 @@ logger.setLevel(logging.DEBUG)
 
 env preparation
 ```bash
-pip install -r requirement-dev.txt
+# create & activate a virtualenv (example with venv)
+python -m venv .venv
+source .venv/bin/activate  # on Windows: .venv\\Scripts\\activate
+
+# install dev/test requirements
+pip install -r requirements-dev.txt
 ```
 
-unit testing
+unit testing (pytest)
 ```bash
-python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc pyswagger/tests
+python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc
+```
+
+notes
+- Tests that exercise the legacy webapp2 client are auto-skipped when
+  `webapp2` and its extras are not installed (and they only target Python 2.x).
+  No manual `-k` filtering is required for local runs.
+
+multi-version testing (tox)
+```bash
+pip install tox
+tox -q   # runs on py38, py310, py312 if available on your system
 ```
 
