@@ -11,6 +11,14 @@
   - README: add GitHub Actions CI badge (keep legacy Travis badge for transition).
   - Local testing: add `pytest.ini` (register markers, set testpaths) and `tox.ini` (py38/py310/py312) so `pytest` and `tox` work out-of-the-box; make legacy `webapp2` tests import-safe and auto-skipping on Python 3.
 
+- Tests and validation (Step 6)
+  - Add targeted tests to strengthen coverage for ported changes:
+    - YAML safety: malicious payload is rejected by safe loader; benign YAML continues to load via existing suite.
+    - Import/compatibility: smoke imports for modules updated to use `collections.abc` and `importlib`.
+    - Dynamic import: test `utils.import_string` against a temporary module.
+    - ISO‑8601: add explicit negative/edge cases to validate parsing and improve determinism across Python versions.
+  - Ensure tests avoid external network I/O and remain deterministic.
+
 - Flask test client: preserve multi-value response headers
   - When a Flask response includes repeated headers with the same name (e.g., `Set-Cookie`, `Link`), the client now forwards all occurrences to the core Response object instead of collapsing/overwriting them.
   - Response.header continues to expose values as lists (existing API), e.g., `resp.header['X-Thing'] == ['a','b']`. Single headers remain single-item lists for backward compatibility.
