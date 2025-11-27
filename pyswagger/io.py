@@ -1,12 +1,12 @@
-from __future__ import absolute_import
 from .primitives.comm import PrimJSONEncoder
 from .utils import final, deref, CaseInsensitiveDict
 from pyswagger import errs
 from uuid import uuid4
-import six
 import io, codecs
 from collections.abc import Mapping, MutableMapping
 import logging
+from urllib import parse as _urlparse
+from urllib.parse import urlencode, quote_plus
 
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class Request(object):
         if self.__op.consumes and content_type not in self.__op.consumes:
             raise errs.SchemaError('content type {0} does not present in {1}'.format(content_type, self.__op.consumes))
 
-        return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
+        return content_type, urlencode(self.__p['formData'])
 
     def _prepare_body(self):
         """ private function to prepare content for paramType=body
@@ -100,18 +100,18 @@ class Request(object):
         w = codecs.getwriter(encoding)
 
         def append(name, obj):
-            body.write(six.b('--{0}\r\n'.format(boundary)))
+            body.write(b'--{0}\r\n'.format(boundary).encode())
 
             # header
             w(body).write('Content-Disposition: form-data; name="{0}"; filename="{1}"'.format(name, obj.filename))
-            body.write(six.b('\r\n'))
+            body.write(b'\r\n')
             if 'Content-Type' in obj.header:
                 w(body).write('Content-Type: {0}'.format(obj.header['Content-Type']))
-                body.write(six.b('\r\n'))
+                body.write(b'\r\n')
             if 'Content-Transfer-Encoding' in obj.header:
                 w(body).write('Content-Transfer-Encoding: {0}'.format(obj.header['Content-Transfer-Encoding']))
-                body.write(six.b('\r\n'))
-            body.write(six.b('\r\n'))
+                body.write(b'\r\n')
+            body.write(b'\r\n')
 
             # body
             if not obj.data:
@@ -119,26 +119,26 @@ class Request(object):
                     body.write(f.read())
             else:
                 data = obj.data.read()
-                if isinstance(data, six.text_type):
+                if isinstance(data, str):
                     w(body).write(data)
                 else:
                     body.write(data)
 
-            body.write(six.b('\r\n'))
+            body.write(b'\r\n')
 
         for k, v in self.__p['formData']:
-            body.write(six.b('--{0}\r\n'.format(boundary)))
+            body.write(b'--{0}\r\n'.format(boundary).encode())
 
             w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
-            body.write(six.b('\r\n'))
-            body.write(six.b('\r\n'))
+            body.write(b'\r\n')
+            body.write(b'\r\n')
 
             w(body).write(v)
 
-            body.write(six.b('\r\n'))
+            body.write(b'\r\n')
 
         # begin of file section
-        for k, v in six.iteritems(self.__p['file']):
+        for k, v in self.__p['file'].items():
             if isinstance(v, list):
                 for vv in v:
                     append(k, vv)
@@ -146,7 +146,7 @@ class Request(object):
                 append(k, v)
 
         # final boundary
-        body.write(six.b('--{0}--\r\n'.format(boundary)))
+        body.write(b'--{0}--\r\n'.format(boundary).encode())
 
         return content_type, body.getvalue()
 
@@ -159,8 +159,8 @@ class Request(object):
         opt_netloc = opt.pop(Request.opt_url_netloc, None)
         opt_scheme = opt.pop(Request.opt_url_scheme, None)
         if opt_netloc or opt_scheme:
-            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)
-            self.__url = six.moves.urllib.parse.urlunparse((
+            scheme, netloc, path, params, query, fragment = _urlparse.urlparse(self.__url)
+            self.__url = _urlparse.urlunparse((
                 opt_scheme or scheme,
                 opt_netloc or netloc,
                 path,
@@ -188,14 +188,14 @@ class Request(object):
                     scheme = self.__scheme
                 else:
                     raise Exception('preferred scheme:{} is not supported by the client or spec:{}'.format(self.__scheme, scheme))
-        elif not isinstance(scheme, six.string_types):
+        elif not isinstance(scheme, str):
             raise ValueError('"scheme" should be a list or string')
 
         # combine path parameters into path
         # TODO: 'dot' is allowed in swagger, but it won't work in python-format
         path_params = {}
-        for k, v in six.iteritems(self.__p['path']):
-            path_params[k] = six.moves.urllib.parse.quote_plus(v)
+        for k, v in self.__p['path'].items():
+            path_params[k] = quote_plus(v)
 
         self.__path = self.__path.format(**path_params)
 
@@ -389,7 +389,7 @@ class Response(object):
 
         if header != None:
             if isinstance(header, (Mapping, MutableMapping)):
-                for k, v in six.iteritems(header):
+                for k, v in header.items():
                     self._convert_header(r, k, v)
             else:
                 for k, v in header:
@@ -405,7 +405,7 @@ class Response(object):
             if r and r.schema and not self.__raw_body_only:
                 # update data from Opeartion if succeed else from responseMessage.responseModel
                 content_type = 'application/json'
-                for k, v in six.iteritems(self.header):
+                for k, v in self.header.iteritems():
                     if k.lower() == 'content-type':
                         content_type = v[0].lower()
                         break

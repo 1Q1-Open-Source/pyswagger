@@ -1,18 +1,19 @@
-from __future__ import absolute_import
 from .consts import private
 from .utils import patch_path
 import json
 import yaml
-import six
 import os
 import logging
 import re
+from urllib import parse as _urlparse
+from urllib import request as _urlrequest
+from collections.abc import Iterator
 
 
 logger = logging.getLogger(__name__)
 
 
-class Getter(six.Iterator):
+class Getter(Iterator):
     """ base of getter object
 
     Idealy, to subclass a getter, you just need to override load function.
@@ -34,13 +35,13 @@ class Getter(six.Iterator):
         # make sure data is string type
         if isinstance(obj, dict):
             pass
-        elif isinstance(obj, six.binary_type):
+        elif isinstance(obj, (bytes, bytearray)):
             obj = obj.decode('utf-8')
-        elif not isinstance(obj, six.string_types):
+        elif not isinstance(obj, str):
             raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
 
         # a very simple logic to distinguish json and yaml
-        if isinstance(obj, six.string_types):
+        if isinstance(obj, str):
             try:
                 if obj.startswith('{'):
                     obj = json.loads(obj)
@@ -67,7 +68,7 @@ class LocalGetter(Getter):
         super(LocalGetter, self).__init__(path)
 
         if path.startswith('file://'):
-            parsed = six.moves.urllib.parse.urlparse(path)
+            parsed = _urlparse.urlparse(path)
             path = parsed.path
         if re.match('^/[A-Z]+:', path) is not None:
             path = os.path.abspath(path[1:])
@@ -125,7 +126,7 @@ class SimpleGetter(Getter):
     """
 
     def __init__(self, path):
-        if isinstance(path, six.string_types):
+        if isinstance(path, str):
             super(SimpleGetter, self).__init__(path)
             if self.base_path.endswith('/'):
                 self.base_path = self.base_path[:-1]
@@ -142,7 +143,7 @@ class SimpleGetter(Getter):
 def _url_load(path):
     ret = f = None
     try:
-        f = six.moves.urllib.request.urlopen(path)
+        f = _urlrequest.urlopen(path)
         ret = f.read()
     finally:
         if f:

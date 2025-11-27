@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-import six
 from ..errs import ValidationError
 from validate_email import validate_email
 
@@ -16,7 +14,7 @@ def validate_str(obj, ret, val, ctx):
     return val
 
 def create_str(obj, v, ctx=None):
-    if isinstance(v, six.string_types):
+    if isinstance(v, str):
         r = v
     else:
         r = str(v)

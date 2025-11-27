@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from .resolve import Resolver
 from .primitives import Primitive, MimeCodec
 from .spec.v1_2.parser import ResourceListContext
@@ -12,9 +11,9 @@ from .scanner.v2_0 import AssignParent, Merge, Resolve, PatchObject, YamlFixer, 
 from pyswagger import utils, errs, consts
 import copy
 import base64
-import six
 import weakref
 import logging
+from urllib import parse as _urlparse
 
 
 logger = logging.getLogger(__name__)
@@ -284,10 +283,10 @@ class App(object):
         app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim, mime_codec=mime_codec, resolver=resolver)
         app.__raw, app.__version = app.load_obj(url, getter=getter, parser=parser)
         if app.__version not in ['1.2', '2.0']:
-            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
+            raise NotImplementedError('Unsupported Version: {0}'.format(app.__version))
 
         # update scheme if any
-        p = six.moves.urllib.parse.urlparse(url)
+        p = _urlparse.urlparse(url)
         if p.scheme:
             app.schemes.append(p.scheme)
 
@@ -322,8 +321,8 @@ class App(object):
             if len(self.__root.schemes) > 0:
                 self.__schemes = self.__root.schemes
             else:
-                # extract schemes from the url to load spec
-                self.__schemes = [six.moves.urlparse(self.__url).schemes]
+                # extract scheme from the url used to load spec
+                self.__schemes = [_urlparse.urlparse(self.__url).scheme]
 
         s = Scanner(self)
         s.scan(root=self.__root, route=[Merge()])
@@ -398,7 +397,7 @@ class App(object):
             if isinstance(o, BaseObj):
                 obj = o.resolve(utils.jp_split(jp)[1:])
             elif isinstance(o, dict):
-                for k, v in six.iteritems(o):
+                for k, v in o.items():
                     if jp.startswith(k):
                         obj = v.resolve(utils.jp_split(jp[len(k):])[1:])
                         break
@@ -421,7 +420,7 @@ class App(object):
         if obj == None:
             raise ValueError('Unable to resolve path, [{0}]'.format(jref))
 
-        if isinstance(obj, (six.string_types, six.integer_types, list, dict)):
+        if isinstance(obj, (str, int, list, dict)):
             return obj
         return weakref.proxy(obj)
 
@@ -479,7 +478,8 @@ class Security(object):
         cred = security_info
         header = True
         if s.type == 'basic':
-            cred = 'Basic ' + base64.standard_b64encode(six.b('{0}:{1}'.format(*security_info))).decode('utf-8')
+            userpass = '{0}:{1}'.format(*security_info).encode('utf-8')
+            cred = 'Basic ' + base64.standard_b64encode(userpass).decode('utf-8')
             key = 'Authorization'
         elif s.type == 'apiKey':
             key = s.name
@@ -502,7 +502,7 @@ class Security(object):
             return req
 
         for s in req._security:
-            for k, v in six.iteritems(s):
+            for k, v in s.items():
                 if not k in self.__info:
                     logger.info('missing: [{0}]'.format(k))
                     continue

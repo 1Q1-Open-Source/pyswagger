@@ -1,7 +1,5 @@
-from __future__ import absolute_import
 from ...core import BaseClient
 from werkzeug.datastructures import FileStorage
-import six
 
 
 class FlaskTestClient(BaseClient):
@@ -43,7 +41,7 @@ class FlaskTestClient(BaseClient):
             # form
             data.update(req._p['formData'])
             # file
-            for k, v in six.iteritems(req.files):
+            for k, v in req.files.items():
                 if isinstance(v, list):
                     data[k] = []
                     for vv in v:

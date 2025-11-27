@@ -1,7 +1,6 @@
-from __future__ import absolute_import
 from ...core import BaseClient
 from requests import Session, Request
-import six
+import io
 
 
 class Client(BaseClient):
@@ -50,7 +49,7 @@ class Client(BaseClient):
             else:
                 file_obj.append((name, (obj.filename, f)))
 
-        for k, v in six.iteritems(req.files):
+        for k, v in req.files.items():
             if isinstance(v, list):
                 for vv in v:
                     append(k, vv)
@@ -71,7 +70,7 @@ class Client(BaseClient):
         resp.apply_with(
             status=rs.status_code,
             header=rs.headers,
-            raw=six.BytesIO(rs.content).getvalue()
+            raw=rs.content
         )
 
         return resp

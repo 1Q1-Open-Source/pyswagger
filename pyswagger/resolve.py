@@ -1,10 +1,9 @@
-from __future__ import absolute_import
 from .utils import jr_split, jp_split
 from .getter import UrlGetter, LocalGetter
-import six
 import os
 import inspect
 import logging
+from urllib import parse as _urlparse
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,11 @@ class Resolver(object):
         self.__default_getter = default_getter
 
     def resolve(self, jref, getter=None):
-        """
+        """Resolve a JSON reference into a raw Python object.
+
+        :param str jref: JSON Reference string (may include a fragment/pointer)
+        :param getter: Optional getter class or instance to load remote content
+        :return: Loaded Python object (dict, list, str, int, ...)
         """
         url, jp = jr_split(jref)
 
@@ -49,7 +52,7 @@ class Resolver(object):
             # load that object
             if not getter:
                 getter = self.__default_getter or UrlGetter
-                p = six.moves.urllib.parse.urlparse(local_url)
+                p = _urlparse.urlparse(local_url)
                 if p.scheme == 'file' and p.path:
                     getter = LocalGetter(os.path.join(p.netloc, p.path))
 
@@ -59,7 +62,7 @@ class Resolver(object):
                 # initialized getter object.
                 getter = getter(local_url)
 
-            obj = six.advance_iterator(getter)
+            obj = next(getter)
             self.__cache[url] = obj if obj else None
 
         if obj:

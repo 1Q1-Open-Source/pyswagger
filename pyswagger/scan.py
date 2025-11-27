@@ -1,6 +1,4 @@
-from __future__ import absolute_import
 from .spec.base import BaseObj
-import six
 
 
 def default_tree_traversal(root, leaves):
@@ -12,7 +10,7 @@ def default_tree_traversal(root, leaves):
         # name of child are json-pointer encoded, we don't have
         # to encode it again.
         if obj.__class__ not in leaves:
-            objs.extend(map(lambda i: (path + '/' + i[0],) + (i[1],), six.iteritems(obj._children_)))
+            objs.extend(map(lambda i: (path + '/' + i[0],) + (i[1],), obj._children_.items()))
 
         # the path we expose here follows JsonPointer described here
         #   http://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-07
@@ -32,7 +30,7 @@ class DispatcherMeta(type):
         return type.__new__(metacls, name, bases, spc)
 
 
-class Dispatcher(six.with_metaclass(DispatcherMeta, object)):
+class Dispatcher(object, metaclass=DispatcherMeta):
     """ Dispatcher
     """
     obj_route = {}

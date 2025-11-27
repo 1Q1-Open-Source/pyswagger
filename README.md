@@ -28,16 +28,15 @@ This project is developed after [swagger-py](https://github.com/digium/swagger-p
 
 ## Features
 - convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
-- support Swagger **1.2**, **2.0** on python ~~2.6~~, **2.7**, **3.3**, **3.5**, **3.6**
+- support Swagger **1.2**, **2.0** on Python 3.10+
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of App. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **App.validate** to check validity of the loaded API definition according to spec.
-- builtin client implementation based on various http clients in python. For usage of these clients, please refer to `pyswagger.tests.contrib.client` for details
+- builtin client implementation based on various http clients in Python. For usage of these clients, please refer to `pyswagger.tests.contrib.client` for details
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
   - [flask.testing.FlaskClient](http://flask.pocoo.org/docs/0.10/api/#flask.testing.FlaskClient)
-  - [webapp2](http://webapp2.readthedocs.io/en/latest/guide/testing.html)
 - not implemented parts, fire me a bug if you need it
   - [ ] Swagger 2.0
     - [ ] Schema.pattern
@@ -195,9 +194,7 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc
 ```
 
 notes
-- Tests that exercise the legacy webapp2 client are auto-skipped when
-  `webapp2` and its extras are not installed (and they only target Python 2.x).
-  No manual `-k` filtering is required for local runs.
+- This project targets Python 3.10+.
 
 multi-version testing (tox)
 ```bash

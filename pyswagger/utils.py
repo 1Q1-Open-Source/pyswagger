@@ -1,7 +1,5 @@
-from __future__ import absolute_import
 from .consts import private
 from .errs import CycleDetectionError
-import six
 import sys
 import datetime
 import re
@@ -10,6 +8,8 @@ import operator
 import functools
 from collections.abc import MutableMapping
 import importlib
+from urllib import parse as _urlparse
+from urllib import request as _urlrequest
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -68,7 +68,7 @@ class ScopeDict(dict):
 
         :param dict keys: keys to access via scopes.
         """
-        k = six.moves.reduce(lambda k1, k2: scope_compose(k1, k2, sep=self.__sep), keys[0]) if isinstance(keys[0], tuple) else keys[0]
+        k = functools.reduce(lambda k1, k2: scope_compose(k1, k2, sep=self.__sep), keys[0]) if isinstance(keys[0], tuple) else keys[0]
         try:
             return super(ScopeDict, self).__getitem__(k)
         except KeyError as e:
@@ -225,7 +225,7 @@ def jp_compose(s, base=None):
     if s == None:
         return base
 
-    ss = [s] if isinstance(s, six.string_types) else s
+    ss = [s] if isinstance(s, str) else s
     ss = [s.replace('~', '~0').replace('/', '~1') for s in ss]
     if base:
         ss.insert(0, base)
@@ -246,9 +246,9 @@ def jp_split(s):
 def jr_split(s):
     """ split a json-reference into (url, json-pointer)
     """
-    p = six.moves.urllib.parse.urlparse(s)
+    p = _urlparse.urlparse(s)
     return (
-        normalize_url(six.moves.urllib.parse.urlunparse(p[:5]+('',))),
+        normalize_url(_urlparse.urlunparse(p[:5]+('',))),
         '#'+p.fragment if p.fragment else '#'
     )
 
@@ -269,7 +269,7 @@ def get_dict_as_tuple(d):
     """ get the first item in dict,
     and return it as tuple.
     """
-    for k, v in six.iteritems(d):
+    for k, v in d.items():
         return k, v
     return None
 
@@ -288,14 +288,8 @@ def nv_tuple_list_replace(l, v):
 def path2url(p):
     """ Return file:// URL from a filename.
     """
-    # Python 3 is a bit different and does a better job.
-    if sys.version_info.major >= 3 and sys.version_info.minor >= 4:
-        import pathlib
-        return pathlib.Path(p).as_uri()
-    else:
-        return six.moves.urllib.parse.urljoin(
-            'file:', six.moves.urllib.request.pathname2url(p)
-        )
+    import pathlib
+    return pathlib.Path(p).as_uri()
 
 _windows_path_prefix = re.compile(r'(^[A-Za-z]:\\)')
 
@@ -309,7 +303,7 @@ def normalize_url(url):
     if matched:
         return path2url(url)
 
-    p = six.moves.urllib.parse.urlparse(url)
+    p = _urlparse.urlparse(url)
     if p.scheme == '':
         if p.netloc == '' and p.path != '':
             # it should be a file path
@@ -322,20 +316,16 @@ def normalize_url(url):
 def url_dirname(url):
     """ Return the folder containing the '.json' file
     """
-    p = six.moves.urllib.parse.urlparse(url)
+    p = _urlparse.urlparse(url)
     for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
         if p.path.endswith(e):
-            return six.moves.urllib.parse.urlunparse(
-                p[:2]+
-                (os.path.dirname(p.path),)+
-                p[3:]
-            )
+            return _urlparse.urlunparse(p[:2] + (os.path.dirname(p.path),) + p[3:])
     return url
 
 def url_join(url, path):
     """ url version of os.path.join
     """
-    p = six.moves.urllib.parse.urlparse(url)
+    p = _urlparse.urlparse(url)
 
     t = None
     if p.path and p.path[-1] == '/':
@@ -345,11 +335,7 @@ def url_join(url, path):
     else:
         t = ('' if path and path[0] == '/' else '/').join([p.path, path])
 
-    return six.moves.urllib.parse.urlunparse(
-        p[:2]+
-        (t,)+ # os.sep is different on windows, don't use it here.
-        p[3:]
-    )
+    return _urlparse.urlunparse(p[:2] + (t,) + p[3:])  # os.sep is different on windows, don't use it here.
 
 def normalize_jr(jr, url=None):
     """ normalize JSON reference, also fix
@@ -373,11 +359,11 @@ def normalize_jr(jr, url=None):
     path, jp = (jr[:idx], jr[idx+1:]) if idx != -1 else (jr, None)
 
     if len(path) > 0:
-        p = six.moves.urllib.parse.urlparse(path)
+        p = _urlparse.urlparse(path)
         if p.scheme == '' and url:
-            p = six.moves.urllib.parse.urlparse(url)
+            p = _urlparse.urlparse(url)
             # it's the path of relative file
-            path = six.moves.urllib.parse.urlunparse(p[:2]+('/'.join([os.path.dirname(p.path), path]),)+p[3:])
+            path = _urlparse.urlunparse(p[:2] + ('/'.join([os.path.dirname(p.path), path]),) + p[3:])
             path = derelativise_url(path)
     else:
         path = url
@@ -396,7 +382,7 @@ def derelativise_url(url):
     '''
     Normalizes URLs, gets rid of .. and .
     '''
-    parsed = six.moves.urllib.parse.urlparse(url)
+    parsed = _urlparse.urlparse(url)
     newpath=[]
     for chunk in parsed.path[1:].split('/'):
         if chunk == '.':
@@ -411,7 +397,7 @@ def derelativise_url(url):
             newpath=newpath[:-1]
             continue
         newpath += [chunk]
-    return six.moves.urllib.parse.urlunparse(parsed[:2]+('/'+('/'.join(newpath)),)+parsed[3:])
+    return _urlparse.urlunparse(parsed[:2] + ('/' + ('/'.join(newpath)),) + parsed[3:])
 
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
@@ -517,9 +503,9 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
 
             # when type is different
             while True:
-                if issubclass(ts, six.string_types) and issubclass(td, six.string_types):
+                if issubclass(ts, str) and issubclass(td, str):
                     break
-                if issubclass(ts, six.integer_types) and issubclass(td, six.integer_types):
+                if issubclass(ts, int) and issubclass(td, int):
                     break
                 if ts == td:
                     break
@@ -609,13 +595,13 @@ class CaseInsensitiveDict(MutableMapping):
         del self._store[key.lower()]
 
     def __iter__(self):
-        return (original_key for original_key, _ in six.itervalues(self._store))
+        return (original_key for original_key, _ in self._store.values())
 
     def iteritems(self):
-        return six.itervalues(self._store)
+        return self._store.values()
 
     def itervalues(self):
-        return (value for _, value in six.itervalues(self._store))
+        return (value for _, value in self._store.values())
 
     def __in__(self, key):
         return key.lower() in self._store
