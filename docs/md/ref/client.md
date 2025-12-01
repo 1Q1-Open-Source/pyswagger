@@ -38,4 +38,8 @@ The return value is a **Response** object, with these attributes:
 - message, corresponds to ResponseMessage object's _message_ when status matched on ResponseMessage object.
 - raw, raw data without touching.
 
+Notes on headers:
+- Header names are case-insensitive; lookups like `resp.header['link']` and `resp.header['Link']` are equivalent.
+- Duplicate headers are preserved as lists (e.g., multiple `Set-Cookie` or `Link` values). Do not join `Set-Cookie` values; handle each cookie header separately.
+
 

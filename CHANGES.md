@@ -2,40 +2,50 @@
 
 ### Unreleased
 
-- CI and dependency refresh (Step 5)
-  - Add GitHub Actions workflow to run tests on Python 3.8, 3.10, and 3.12 with pip caching.
-  - Refresh requirements:
-    - Runtime: add explicit `PyYAML>=6.0` (safe_load available on all supported Pythons).
-    - Dev/Test: update to Python 3.12-compatible tools (`pytest>=7.4`, `pytest-cov>=4.1`, `Flask>=2.3`, `tornado>=6.2`, `httpretty>=1.1.4`, `requests>=2.28`, `Sphinx>=7.2`).
-    - Remove legacy/unmaintained dev deps (`pudb`, `webapp2`).
-  - README: add GitHub Actions CI badge (keep legacy Travis badge for transition).
-  - Local testing: add `pytest.ini` (register markers, set testpaths) and `tox.ini` (py38/py310/py312) so `pytest` and `tox` work out-of-the-box; make legacy `webapp2` tests import-safe and auto-skipping on Python 3.
+#### Added
+- (placeholder)
 
-- Tests and validation (Step 6)
-  - Add targeted tests to strengthen coverage for ported changes:
-    - YAML safety: malicious payload is rejected by safe loader; benign YAML continues to load via existing suite.
-    - Import/compatibility: smoke imports for modules updated to use `collections.abc` and `importlib`.
-    - Dynamic import: test `utils.import_string` against a temporary module.
-    - ISO‑8601: add explicit negative/edge cases to validate parsing and improve determinism across Python versions.
-  - Ensure tests avoid external network I/O and remain deterministic.
+#### Changed
+- (placeholder)
 
-- Flask test client: preserve multi-value response headers
-  - When a Flask response includes repeated headers with the same name (e.g., `Set-Cookie`, `Link`), the client now forwards all occurrences to the core Response object instead of collapsing/overwriting them.
-  - Response.header continues to expose values as lists (existing API), e.g., `resp.header['X-Thing'] == ['a','b']`. Single headers remain single-item lists for backward compatibility.
-  - Case-insensitive header aggregation is improved to ensure mixed-case duplicates (e.g., `link` and `Link`) are combined.
+#### Fixed
+- (placeholder)
 
-- Codec and format enhancements (Step 3)
-  - Add support for `application/hal+json` by reusing JSON codec semantics for marshal/unmarshal (including parameterized content types like `; charset=utf-8`).
-  - Improve UUID format handling for `type: string, format: uuid`:
-    - Accept `uuid.UUID` instances directly, serializing outbound values to canonical strings.
-    - Validate UUID strings using the standard hyphenated RFC 4122 form; reject non-hyphenated 32-hex strings and malformed values.
+#### Removed/Deprecated
+- (placeholder)
 
-- Renderer presets (Step 4)
-  - Introduce opt-in renderer presets to control output size and strictness without changing existing defaults.
-  - Presets:
-    - `classic` (default behavior): mirrors historical defaults.
-    - `minimal` (opt-in): generates required-only properties/parameters and applies smaller caps (e.g., strings/arrays/bytes) for concise examples.
-  - API: `Renderer.default(preset=None|"classic"|"minimal")` or pass the returned options to `render`/`render_all` via the existing `opt` parameter. Default behavior remains unchanged unless a preset is explicitly selected.
+#### Migration notes
+- (placeholder)
+
+### 0.9.0 — 2025-12-01
+
+#### Added
+- GitHub Actions CI workflow to run tests on Python 3.8, 3.10, and 3.12 with pip caching. (Step 5)
+- Support for `application/hal+json` via the JSON codec, including parameterized content types like `; charset=utf-8`. (Step 3)
+- Renderer presets: opt-in `minimal` preset alongside historical `classic` behavior. (Step 4)
+- Targeted tests covering YAML safety, import/ABC compatibility, dynamic import via `utils.import_string`, and ISO-8601 negative cases. (Step 6)
+
+#### Changed
+- Flask test client now preserves multi-value response headers, forwarding all occurrences (e.g., `Set-Cookie`, `Link`) to the core Response object. Header aggregation is case-insensitive. (Step 2)
+- UUID format handling updated: outbound `uuid.UUID` values are serialized to canonical strings; string validation expects hyphenated RFC 4122 form. (Step 3)
+- Documentation and badges updated to reflect Git-based installation and CI status. (Step 7)
+
+#### Fixed
+- Legacy tests and imports updated to avoid `imp` and to use `collections.abc` for Python 3.8–3.12 compatibility. (Step 1/5)
+- Improved determinism across tests; avoid external network I/O. (Step 6)
+
+#### Removed/Deprecated
+- Remove legacy/unmaintained dev dependencies (`pudb`, `webapp2`) from active requirements; legacy webapp2 tests guarded to auto-skip on Python 3. (Step 5)
+
+#### Migration notes
+- Flask client multi-value headers: Code that assumed a single string value must handle lists when duplicates are present, e.g., `resp.header['Link']` may be `['<...>; rel="next"', '<...>; rel="prev"']`. Do not join `Set-Cookie` values; handle each cookie separately.
+- Renderer presets: Defaults unchanged. To opt into the `minimal` preset, use `Renderer.default('minimal')` and pass the options to `render`/`render_all`.
+- HAL codec: `application/hal+json` is supported out of the box; no changes required unless custom workarounds existed.
+- UUID format: Outbound `uuid.UUID` values are serialized to strings; inbound values remain strings.
+- Python versions: Use Python 3.8–3.12 with updated dependencies from `requirements*.txt`.
+
+#### Version
+- Bump version to 0.9.0 and tag release.
 
 ### 0.8.39
 

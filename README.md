@@ -28,8 +28,10 @@ This project is developed after [swagger-py](https://github.com/digium/swagger-p
 
 ## Features
 - convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
-- support Swagger **1.2**, **2.0** on Python 3.10+
+- support Swagger **1.2**, **2.0** on Python 3.8–3.12
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
+- support `application/hal+json` media type (handled by the JSON codec)
+- improved UUID handling for `type: string, format: uuid` (accept `uuid.UUID` outbound and serialize to canonical strings)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of App. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **App.validate** to check validity of the loaded API definition according to spec.
@@ -109,24 +111,30 @@ assert pet.id == 1
 ---------
 
 ## Installation
-We support pip installtion.
+This project is currently distributed from GitHub (not PyPI). Install directly from a tag or commit:
+
 ```bash
-pip install pyswagger
+# from a Git tag (recommended for releases)
+python -m pip install "pyswagger @ git+https://github.com/1Q1-Open-Source/pyswagger.git@v<RELEASE_TAG>"
+
+# from a specific commit
+python -m pip install git+https://github.com/1Q1-Open-Source/pyswagger.git@<COMMIT_SHA>
+
+# from a zip of a tagged release
+python -m pip install https://github.com/1Q1-Open-Source/pyswagger/archive/refs/tags/v<RELEASE_TAG>.zip
 ```
 
-Additional dependencies must be prepared before firing a request. If you are going to access a remote/local web server, you must install [requests](https://github.com/kennethreitz/requests) first.
+Common extras you may need for clients:
+
 ```bash
-pip install requests
-```
+# requests-based client
+python -m pip install requests
 
-If you want to test a local tornado server, please make sure tornado is ready on your environment
-``` bash
-pip install tornado
-```
+# testing a local Tornado server
+python -m pip install tornado
 
-We also provide native client for flask app, but to use it, flask is also required
-``` bash
-pip install flask
+# using the Flask test client wrapper
+python -m pip install Flask
 ```
 
 
@@ -194,7 +202,7 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc
 ```
 
 notes
-- This project targets Python 3.10+.
+- This project targets Python 3.8–3.12 (CI matrix: 3.8, 3.10, 3.12).
 
 multi-version testing (tox)
 ```bash
