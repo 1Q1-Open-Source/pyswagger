@@ -1,5 +1,4 @@
 import json
-import six
 from .comm import PrimJSONEncoder
 
 
@@ -51,6 +50,6 @@ class JsonCodec:
         return json.dumps(value, cls=PrimJSONEncoder)
 
     def unmarshal(self, data, **kwargs):
-        if isinstance(data, six.binary_type):
+        if isinstance(data, (bytes, bytearray)):
             data = data.decode('utf-8')
         return json.loads(data)

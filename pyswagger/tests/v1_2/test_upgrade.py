@@ -4,7 +4,6 @@ from ..utils import get_test_data_folder, is_windows
 from ...spec.v2_0 import objects
 import unittest
 import os
-import six
 
 
 folder = normalize_url(get_test_data_folder(

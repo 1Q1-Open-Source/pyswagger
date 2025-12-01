@@ -7,7 +7,7 @@ from pyswagger.spec.v2_0.objects import (
 import unittest
 import httpretty
 import os
-import six
+from urllib.parse import urlparse
 
 
 class HTTPGetterTestCase(unittest.TestCase):
@@ -127,7 +127,7 @@ class AppTestCase(unittest.TestCase):
 
         def _hook(url):
             # a demo of hooking a remote url to local path
-            p = six.moves.urllib.parse.urlparse(url)
+            p = urlparse(url)
             return utils.normalize_url(os.path.join(folder, p.path[1:]))
 
         self.app = App.load('http://petstore.io/wordnik', url_load_hook=_hook)

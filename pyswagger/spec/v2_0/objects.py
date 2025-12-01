@@ -4,7 +4,6 @@ from ...utils import final
 from ...io import Request
 from ...io import Response as _Response
 from ...primitives import Array
-import six
 import copy
 
 
@@ -12,7 +11,7 @@ class BaseObj_v2_0(BaseObj):
     __swagger_version__ = '2.0'
 
 
-class XMLObject(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class XMLObject(BaseObj_v2_0, metaclass=FieldMeta):
     """ XML Object
     """
     __swagger_fields__ = {
@@ -48,7 +47,7 @@ class BaseSchema(BaseObj_v2_0):
     }
 
 
-class Items(six.with_metaclass(FieldMeta, BaseSchema)):
+class Items(BaseSchema, metaclass=FieldMeta):
     """ Items Object
     """
 
@@ -60,7 +59,7 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
         return prim_factory.produce(self, v, ctx)
 
 
-class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
+class Schema(BaseSchema, metaclass=FieldMeta):
     """ Schema Object
     """
 
@@ -92,7 +91,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         return prim_factory.produce(self, v, ctx)
 
 
-class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Swagger(BaseObj_v2_0, metaclass=FieldMeta):
     """ Swagger Object
     """
 
@@ -115,7 +114,7 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class Contact(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Contact(BaseObj_v2_0, metaclass=FieldMeta):
     """ Contact Object
     """
 
@@ -126,7 +125,7 @@ class Contact(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class License(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class License(BaseObj_v2_0, metaclass=FieldMeta):
     """ License Object
     """
 
@@ -136,7 +135,7 @@ class License(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class Info(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Info(BaseObj_v2_0, metaclass=FieldMeta):
     """ Info Object
     """
 
@@ -150,7 +149,7 @@ class Info(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
+class Parameter(BaseSchema, metaclass=FieldMeta):
     """ Parameter Object
     """
 
@@ -184,7 +183,7 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
         return prim_factory.produce(self.schema, v, ctx) if i == 'body' else prim_factory.produce(self, v, ctx)
 
 
-class Header(six.with_metaclass(FieldMeta, BaseSchema)):
+class Header(BaseSchema, metaclass=FieldMeta):
     """ Header Object
     """
 
@@ -197,7 +196,7 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
         return prim_factory.produce(self, v, ctx)
 
 
-class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Response(BaseObj_v2_0, metaclass=FieldMeta):
     """ Response Object
     """
 
@@ -217,7 +216,7 @@ class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Operation(BaseObj_v2_0, metaclass=FieldMeta):
     """ Operation Object
     """
 
@@ -283,7 +282,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             _convert_parameter(final(p))
 
         # check for unknown parameter
-        unknown = set(six.iterkeys(k)) - set(names)
+        unknown = set(k.keys()) - set(names)
         if len(unknown) > 0:
             raise ValueError('Unknown parameters: {0}'.format(unknown))
 
@@ -291,7 +290,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         Request(op=self, params=params), _Response(self)
 
 
-class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class PathItem(BaseObj_v2_0, metaclass=FieldMeta):
     """ Path Item Object
     """
 
@@ -310,7 +309,7 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class SecurityScheme(BaseObj_v2_0, metaclass=FieldMeta):
     """ Security Scheme Object
     """
 
@@ -326,7 +325,7 @@ class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class Tag(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class Tag(BaseObj_v2_0, metaclass=FieldMeta):
     """ Tag Object
     """
 
@@ -337,7 +336,7 @@ class Tag(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
 
-class ExternalDocumentation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+class ExternalDocumentation(BaseObj_v2_0, metaclass=FieldMeta):
     """ External Documentation Object
     """
 

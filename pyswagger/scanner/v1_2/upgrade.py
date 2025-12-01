@@ -14,7 +14,7 @@ from ...spec.v1_2.objects import (
 )
 from ...spec.v2_0 import objects
 import os
-import six
+from urllib.parse import urlparse, urlunparse
 
 
 def update_type_and_ref(dst, src, scope, sep, app):
@@ -164,7 +164,7 @@ class Upgrade(object):
         # looking for it in resource object.
         _auth = obj.authorizations if obj.authorizations and len(obj.authorizations) > 0 else obj._parent_.authorizations
         if _auth:
-            for name, scopes in six.iteritems(_auth):
+            for name, scopes in (_auth).items():
                 o.security.append({name: [v.scope for v in scopes]})
 
         # Operation return value
@@ -263,7 +263,7 @@ class Upgrade(object):
             self.__swagger.definitions[s] = o
 
         props = {}
-        for name, prop in six.iteritems(obj.properties):
+        for name, prop in obj.properties.items():
             props[name] = convert_schema_from_datatype(prop, scope, self.__sep, app)
             props[name].update_field('description', prop.description)
         o.update_field('properties', props)
@@ -298,10 +298,10 @@ class Upgrade(object):
         common_path = common_path[:-1] if common_path[-1] == '/' else common_path
 
         if len(common_path) > 0:
-            p = six.moves.urllib.parse.urlparse(common_path)
+            p = urlparse(common_path)
             self.__swagger.update_field('host', p.netloc)
 
-            new_common_path = six.moves.urllib.parse.urlunparse((
+            new_common_path = urlunparse((
                 p.scheme, p.netloc, '', '', '', ''))
             new_path = {}
             for k in self.__swagger.paths.keys():

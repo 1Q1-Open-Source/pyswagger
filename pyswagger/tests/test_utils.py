@@ -3,7 +3,6 @@ from .utils import is_windows, is_py2
 from datetime import datetime
 import unittest
 import functools
-import six
 import os
 
 

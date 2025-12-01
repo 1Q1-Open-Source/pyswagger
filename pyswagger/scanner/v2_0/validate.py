@@ -3,7 +3,6 @@ from ...scan import Dispatcher
 from ...spec.v2_0.objects import (
     Schema
     )
-import six
 
 
 class Validate(object):

@@ -6,8 +6,8 @@ from ....primitives import Model, Array
 import unittest
 import httpretty
 import json
-import six
 import os
+import io
 
 
 app = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
@@ -171,7 +171,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
             status=200)
 
         resp = client.request(app.op['uploadFile'](
-            additionalMetadata='a test image', file=dict(data=six.StringIO('a test Content'), filename='test.txt')))
+            additionalMetadata='a test image', file=dict(data=io.StringIO('a test Content'), filename='test.txt')))
 
         self.assertEqual(resp.status, 200)
 
@@ -216,9 +216,9 @@ class MultipleFileUploadTestCase(unittest.TestCase):
 
         app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
         resp = client.request(app.op['upload_images'](images=[
-                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
-                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
-                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k')
+                dict(data=io.BytesIO(b'test image 1'), filename='_1.k'),
+                dict(data=io.BytesIO(b'test image 2'), filename='_2.k'),
+                dict(data=io.BytesIO(b'test image 3'), filename='_3.k')
             ])
         )
         self.assertEqual(resp.status, 200)

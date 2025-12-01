@@ -5,7 +5,7 @@ import pyswagger
 import unittest
 import httpretty
 import os
-import six
+from urllib.parse import urlparse
 
 
 class SwaggerCoreTestCase(unittest.TestCase):
@@ -77,7 +77,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
         self.assertEqual(req.url, 'file://localhost/t1')
 
         # load swagger.json from a file uri
-        self.assertNotEqual(six.moves.urllib.parse.urlparse(fu).scheme, '')
+        self.assertNotEqual(urlparse(fu).scheme, '')
         app = App.create(fu)
         req, _ = app.s('t1').get()
         self.assertEqual(req.url, '//localhost/t1')

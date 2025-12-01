@@ -22,7 +22,6 @@ from ...spec.v1_2.objects import (
     Info,
     ResourceList
     )
-import six
 
 
 class Validate(object):
@@ -128,7 +127,7 @@ class Validate(object):
         """
         errs = []
 
-        for k, v in six.iteritems(obj.authorizations or {}):
+        for k, v in (obj.authorizations or {}).items():
             if k not in app.raw.authorizations:
                 errs.append('auth {0} not found in resource list'.format(k))
 

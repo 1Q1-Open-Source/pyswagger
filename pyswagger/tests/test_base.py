@@ -1,11 +1,10 @@
 from __future__ import absolute_import
 from pyswagger.spec import base
 import unittest
-import six
 import copy
 
 
-class GrandChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+class GrandChildObj(base.BaseObj, metaclass=base.FieldMeta):
     __swagger_fields__ = {
         'name': ''
     }
@@ -13,7 +12,7 @@ class GrandChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
 class GrandChildContext(base.Context):
     __swagger_ref_object__ = GrandChildObj
 
-class ChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+class ChildObj(base.BaseObj, metaclass=base.FieldMeta):
     __swagger_fields__ = {
         'g': None
     }
@@ -24,7 +23,7 @@ class ChildContext(base.Context):
         'g': (None, GrandChildContext)
     }
 
-class TObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+class TObj(base.BaseObj, metaclass=base.FieldMeta):
     __swagger_fields__ = {
         'a': [],
         'b': {},
@@ -74,7 +73,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_field_rename(self):
         """ renamed field name """
 
-        class TestRenameObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+        class TestRenameObj(base.BaseObj, metaclass=base.FieldMeta):
             __swagger_fields__ = {'a': None}
             __swagger_rename__ = {'a': 'b'}
 
@@ -101,7 +100,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_merge(self):
         """ test merge function """
 
-        class MergeObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+        class MergeObj(base.BaseObj, metaclass=base.FieldMeta):
             __swagger_fields__ = {
                 'ma': None,
                 'mb': None,
@@ -355,16 +354,16 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_inheritance(self):
         """ test case for multiple layers of inheritance of BaseObj
         """
-        class A(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+        class A(base.BaseObj, metaclass=base.FieldMeta):
             __swagger_fields__ = {'a': None}
 
-        class B(six.with_metaclass(base.FieldMeta, A)):
+        class B(A, metaclass=base.FieldMeta):
             __swagger_fields__ = {'b': None}
 
-        class C(six.with_metaclass(base.FieldMeta, B)):
+        class C(B, metaclass=base.FieldMeta):
             __swagger_fields__ = {'c': None}
 
-        class D(six.with_metaclass(base.FieldMeta, C)):
+        class D(C, metaclass=base.FieldMeta):
             __swagger_fields__ = {'d': None}
 
         class Dx(base.Context):

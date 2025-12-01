@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import six
 
 class Model(dict):
     """ for complex type: models
@@ -20,7 +19,7 @@ class Model(dict):
         :param obj.Model obj: model object to instruct how to create this model
         :param dict val: things used to construct this model
         """
-        for k, v in six.iteritems(val):
+        for k, v in val.items():
             if k in obj.properties:
                 pobj = obj.properties.get(k)
                 if pobj.readOnly == True and ctx['read'] == False:
@@ -35,8 +34,8 @@ class Model(dict):
             elif obj.additionalProperties not in (None, False):
                 ctx['addp_schema'] = obj
 
-        in_obj = set(six.iterkeys(obj.properties))
-        in_self = set(six.iterkeys(self))
+        in_obj = set(obj.properties.keys())
+        in_self = set(self.keys())
 
         other_prop = in_obj - in_self
         for k in other_prop:
@@ -44,14 +43,14 @@ class Model(dict):
             if p.is_set("default"):
                 self[k] = ctx['factory'].produce(p, p.default)
 
-        not_found = set(obj.required) - set(six.iterkeys(self))
+        not_found = set(obj.required) - set(self.keys())
         if len(not_found):
             raise ValueError('Model missing required key(s): {0}'.format(', '.join(not_found)))
 
         # remove assigned properties to avoid duplicated
         # primitive creation
         _val = {}
-        for k in set(six.iterkeys(val)) - in_obj:
+        for k in set(val.keys()) - in_obj:
             _val[k] = val[k]
 
         if obj.discriminator:
@@ -63,12 +62,12 @@ class Model(dict):
         """
         """
         if ctx['addp'] == True:
-            for k, v in six.iteritems(val):
+            for k, v in val.items():
                 self[k] = v
             ctx['addp'] = False
         elif ctx['addp_schema'] != None:
             obj = ctx['addp_schema']
-            for k, v in six.iteritems(val):
+            for k, v in val.items():
                 self[k] = ctx['factory'].produce(obj.additionalProperties, v)
             ctx['addp_schema'] = None
 
@@ -84,7 +83,7 @@ class Model(dict):
         if other == None:
             return False
 
-        for k, v in six.iteritems(self):
+        for k, v in self.items():
             if v != other.get(k, None):
                 return False
 

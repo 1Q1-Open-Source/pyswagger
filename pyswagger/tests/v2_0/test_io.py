@@ -4,8 +4,8 @@ from pyswagger import App, io, primitives
 from ..utils import get_test_data_folder
 import unittest
 import os
-import six
 import json
+import io as _io
 
 
 class RequestTestCase(unittest.TestCase):
@@ -151,6 +151,6 @@ class ResponseTestCase(unittest.TestCase):
         """ utf-8 encoding should support by default
         """
         resp = io.Response(self.app.s('/resp2').get)
-        resp.apply_with(status=200, raw=six.BytesIO(six.u('{"message":"測試資料A"}').encode('utf8')).getvalue())
+        resp.apply_with(status=200, raw=_io.BytesIO('{"message":"測試資料A"}'.encode('utf8')).getvalue())
 
 

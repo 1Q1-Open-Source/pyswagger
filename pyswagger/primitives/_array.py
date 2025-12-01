@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from ..errs import ValidationError, SchemaError
 import functools
-import six
 
 
 class Array(list):
@@ -19,7 +18,7 @@ class Array(list):
         """
         self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
 
-        if isinstance(val, six.string_types):
+        if isinstance(val, str):
             if self.__collection_format == 'csv':
                 val = val.split(',')
             elif self.__collection_format == 'ssv':

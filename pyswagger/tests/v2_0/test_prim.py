@@ -7,7 +7,6 @@ from pyswagger.primitives import Primitive
 import os
 import unittest
 import datetime
-import six
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -223,9 +222,9 @@ class SchemaTestCase(unittest.TestCase):
         self.assertEqual(str(dv), '12345678-1234-5678-1234-567812345678')
 
         # byte
-        dv = d._prim_(six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'), self.app.prim_factory)
+        dv = d._prim_(b'\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78', self.app.prim_factory)
         self.assertTrue(isinstance(dv, primitives.UUID), 'should be an primitives.UUID, not {0}'.format(dv))
-        self.assertEqual(dv.v.bytes, six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'))
+        self.assertEqual(dv.v.bytes, b'\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78')
 
         # unsupported type - e.g. int
         self.assertRaises(ValueError, d._prim_, 123, self.app.prim_factory)
@@ -251,7 +250,7 @@ class SchemaTestCase(unittest.TestCase):
         p = self.app.resolve('#/definitions/password')
 
         pv = p._prim_('p@ssw0rd', self.app.prim_factory)
-        self.assertTrue(isinstance(pv, six.string_types))
+        self.assertTrue(isinstance(pv, str))
 
     def test_read_only(self):
         """ make sure read-only for property works """

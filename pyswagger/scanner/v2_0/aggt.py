@@ -5,7 +5,6 @@ from ...spec.v2_0.objects import Schema
 from ...spec.base import NullContext
 from ...spec.v2_0.parser import SchemaContext
 from ...utils import deref, CycleGuard
-import six
 
 def _compose(obj, guard=None):
     guard = CycleGuard() if not guard else guard
@@ -20,7 +19,7 @@ def _compose(obj, guard=None):
 
     if obj.items != None:
         _compose(obj.items, guard)
-    for v in six.itervalues(obj.properties):
+    for v in obj.properties.values():
         _compose(v, guard)
     for v in (obj.allOf or []):
         _compose(v, guard)
@@ -39,7 +38,7 @@ def _compose(obj, guard=None):
             continue
         o = o.final if o.final else o
         final.merge(o, SchemaContext, exclude=['$ref', 'allOf'])
-        for n, p in six.iteritems(o.properties):
+        for n, p in o.properties.items():
             if n in obj.properties:
                 continue
             final.properties[n] = p

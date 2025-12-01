@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from ..utils import from_iso8601
 import datetime
-import six
 
 
 class Time(object):
@@ -32,7 +31,7 @@ class Date(Time):
             self.v = datetime.date.fromtimestamp(v)
         elif isinstance(v, datetime.date):
             self.v = v
-        elif isinstance(v, six.string_types):
+        elif isinstance(v, str):
             self.v = from_iso8601(v).date()
         else:
             raise ValueError('Unrecognized type for Date: ' + str(type(v)))
@@ -53,7 +52,7 @@ class Datetime(Time):
             self.v = datetime.datetime.utcfromtimestamp(v)
         elif isinstance(v, datetime.datetime):
             self.v = v
-        elif isinstance(v, six.string_types):
+        elif isinstance(v, str):
             self.v = from_iso8601(v)
         else:
             raise ValueError('Unrecognized type for Datetime: ' + str(type(v)))

@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from ..utils import jp_compose
-import six
 import copy
 import functools
 import weakref
@@ -35,11 +34,11 @@ def container_apply(ct, v, f, fd=None, fdl=None):
             ret.append(f(ct, vv))
     elif ct == ContainerType.dict_:
         ret = {}
-        for k, vv in six.iteritems(v):
+        for k, vv in v.items():
             ret[k] = fd(ct, vv, k) if fd else f(ct, vv)
     elif ct == ContainerType.dict_of_list_:
         ret = {}
-        for k, vv in six.iteritems(v):
+        for k, vv in v.items():
             if fdl:
                 fdl(ct, vv, k)
             ret[k] = []
@@ -144,7 +143,7 @@ class Context(object):
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
-            for key, (ct, ctx_kls) in six.iteritems(self.__swagger_child__):
+            for key, (ct, ctx_kls) in self.__swagger_child__.items():
                 items = obj.get(key, None)
 
                 # create an empty child, even it's None in input.
@@ -203,13 +202,13 @@ class BaseObj(object):
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
-        self.__origin_keys = set([k for k in six.iterkeys(ctx._obj)])
+        self.__origin_keys = set([k for k in ctx._obj.keys()])
 
         # handle fields
-        for name, default in six.iteritems(self.__swagger_fields__):
+        for name, default in self.__swagger_fields__.items():
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
-        for name, default in six.iteritems(self.__internal_fields__):
+        for name, default in self.__internal_fields__.items():
             setattr(self, self.get_private_name(name), None)
 
         self._assign_parent(ctx)
@@ -228,7 +227,7 @@ class BaseObj(object):
                 raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
 
         # set self as childrent's parent
-        for name, (ct, ctx) in six.iteritems(ctx.__swagger_child__):
+        for name, (ct, ctx) in ctx.__swagger_child__.items():
             obj = getattr(self, name)
             if obj == None:
                 continue
@@ -261,7 +260,7 @@ class BaseObj(object):
 
         :param list ts: list of tokens
         """
-        if isinstance(ts, six.string_types):
+        if isinstance(ts, str):
             ts = [ts]
 
         obj = self
@@ -289,8 +288,8 @@ class BaseObj(object):
             return x(None, None).produce().merge(v, x)
 
         for name, default in itertools.chain(
-                six.iteritems(self.__swagger_fields__),
-                six.iteritems(self.__internal_fields__)):
+                self.__swagger_fields__.items(),
+                self.__internal_fields__.items()):
             if name in exclude:
                 continue
 
@@ -298,7 +297,7 @@ class BaseObj(object):
             if v == default:
                 continue
 
-            childs = [(n, ct, cctx) for n, (ct, cctx) in six.iteritems(ctx.__swagger_child__) if n == name]
+            childs = [(n, ct, cctx) for n, (ct, cctx) in ctx.__swagger_child__.items() if n == name]
             if len(childs) == 0:
                 # we don't need to make a copy,
                 # since everything under App should be
@@ -351,7 +350,7 @@ class BaseObj(object):
 
         def cmp_func(name, s, o):
             # special case for string types
-            if isinstance(s, six.string_types) and isinstance(o, six.string_types):
+            if isinstance(s, str) and isinstance(o, str):
                 return s == o, name
 
             if s.__class__ != o.__class__:
@@ -374,7 +373,7 @@ class BaseObj(object):
                 if diff:
                     return False, jp_compose(str(diff[0]), name)
 
-                for k, v in six.iteritems(s):
+                for k, v in s.items():
                     same, n = cmp_func(jp_compose(k, name), v, o[k])
                     if not same:
                         return same, n
@@ -398,7 +397,7 @@ class BaseObj(object):
         def _dump_(obj):
             if isinstance(obj, dict):
                 ret = {}
-                for k, v in six.iteritems(obj):
+                for k, v in obj.items():
                     ret[k] = _dump_(v)
                 return None if ret == {} else ret
             elif isinstance(obj, list):
@@ -408,14 +407,14 @@ class BaseObj(object):
                 return None if ret == [] else ret
             elif isinstance(obj, BaseObj):
                 return obj.dump()
-            elif isinstance(obj, (six.string_types, six.integer_types)):
+            elif isinstance(obj, (str, int)):
                 return obj
             elif isinstance(obj, float):
                 return obj
             else:
                 raise ValueError('Unknown object to dump: {0}'.format(obj.__class__.__name__))
 
-        for name, default in six.iteritems(self.__swagger_fields__):
+        for name, default in self.__swagger_fields__.items():
             # only dump a field when its value is not equal to default value
             v = getattr(self, name)
             if v != default:
@@ -442,7 +441,7 @@ class BaseObj(object):
         :rtype: a list of str
         """
         ret = []
-        for n in six.iterkeys(self.__swagger_fields__):
+        for n in self.__swagger_fields__.keys():
             new_n = self.__swagger_rename__.get(n, None)
             ret.append(new_n) if new_n else ret.append(n)
         
@@ -465,7 +464,7 @@ class BaseObj(object):
                 for i, v in zip(range(len(obj)), obj):
                     down(jp_compose(str(i), name), v)
             elif isinstance(obj, dict):
-                for k, v in six.iteritems(obj):
+                for k, v in obj.items():
                     down(jp_compose(k, name), v)
 
         for n in names:
@@ -489,7 +488,7 @@ class FieldMeta(type):
         and create those fields.
         """
         def init_fields(fields, rename):
-            for name in six.iterkeys(fields):
+            for name in fields.keys():
                 name = rename[name] if name in rename.keys() else name
                 spc[name] = property(_method_(name))
 

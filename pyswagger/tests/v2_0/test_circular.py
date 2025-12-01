@@ -4,7 +4,6 @@ from ...scanner import CycleDetector
 from ...scan import Scanner
 import unittest
 import os
-import six
 
 
 class CircularRefTestCase(unittest.TestCase):

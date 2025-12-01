@@ -14,7 +14,6 @@ from ..spec.v2_0.parser import (
     PathItemContext,
     )
 import functools
-import six
 
 def _out(app, parser, path):
     obj = app.resolve(path, parser=parser)
@@ -24,7 +23,7 @@ def _out(app, parser, path):
 def _schema_out_obj(obj, out=None):
     out = [] if out == None else out
 
-    for o in six.itervalues(obj.properties):
+    for o in obj.properties.values():
         out = _schema_out_obj(o, out)
 
     for o in obj.allOf:

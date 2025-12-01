@@ -3,8 +3,8 @@ from ...scan import Dispatcher
 from ...spec.v2_0.objects import PathItem, Operation, Schema, Swagger
 from ...spec.v2_0.parser import PathItemContext
 from ...utils import jp_split, scope_split, final
-import six
 import copy
+from urllib.parse import urlparse, urlunparse
 
 
 class PatchObject(object):
@@ -57,9 +57,9 @@ class PatchObject(object):
         """
         k = jp_split(path)[-1] # key to the dict containing PathItem(s)
         if isinstance(app.root, Swagger):
-            host = app.root.host if app.root.host else six.moves.urllib.parse.urlparse(app.url)[1]
+            host = app.root.host if app.root.host else urlparse(app.url)[1]
             host = host if len(host) > 0 else 'localhost'
-            url = six.moves.urllib.parse.urlunparse((
+            url = urlunparse((
                     '',                            # schema
                     host,                          # netloc
                     (app.root.basePath or '') + k, # path
@@ -70,7 +70,7 @@ class PatchObject(object):
             url = None
             base_path = None
 
-        for n in six.iterkeys(PathItemContext.__swagger_child__):
+        for n in PathItemContext.__swagger_child__.keys():
             o = getattr(obj, n)
             if isinstance(o, Operation):
                 # base path

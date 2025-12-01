@@ -18,7 +18,6 @@ from pyswagger.spec.v1_2.objects import (
     Authorizations,
     Model)
 import unittest
-import six
 
 
 app = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -214,5 +213,5 @@ class DataTypeTestCase(unittest.TestCase):
         """ children """
         chd = app.raw._children_
         self.assertEqual(len(chd), 5)
-        self.assertEqual(set(['apis/user', 'apis/pet', 'apis/store']), set([k for k, v in six.iteritems(chd) if isinstance(v, Resource)]))
+        self.assertEqual(set(['apis/user', 'apis/pet', 'apis/store']), set([k for k, v in chd.items() if isinstance(v, Resource)]))
 

@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import six
 import base64
 
 
@@ -10,11 +9,11 @@ class Byte(object):
     def apply_with(self, _, v, ctx):
         """ constructor
 
-        :param str v: accept six.string_types, six.binary_type
+        :param str v: accept str or bytes
         """
-        if isinstance(v, six.binary_type):
+        if isinstance(v, (bytes, bytearray)):
             self.v = v
-        elif isinstance(v, six.string_types):
+        elif isinstance(v, str):
             self.v = v.encode('utf-8')
         else:
             raise ValueError('Unsupported type for Byte: ' + str(type(v)))

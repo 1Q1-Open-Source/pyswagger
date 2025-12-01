@@ -4,8 +4,8 @@ from pyswagger.contrib.client.flask import FlaskTestClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 from flask import Flask, json, request
 import unittest
-import six
 import os
+import io
 
 
 sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
@@ -71,7 +71,7 @@ def pet_image():
         global received_file
         global received_meta
 
-        out = six.BytesIO()
+        out = io.BytesIO()
         request.files['file'].save(out)
         received_file = out.getvalue()
         out.close()
@@ -168,7 +168,7 @@ class FlaskTestCase(unittest.TestCase):
 
         resp = self.client.request(
             sapp.op['uploadFile'](
-                additionalMetadata='a test file', file=dict(data=six.BytesIO(six.b('a test Content')), filename='test.txt')),
+                additionalMetadata='a test file', file=dict(data=io.BytesIO(b'a test Content'), filename='test.txt')),
         )
 
         self.assertEqual(resp.status, 200)
@@ -184,9 +184,9 @@ class FlaskTestCase(unittest.TestCase):
 
         self.client.request(
             app.op['upload_images'](images=[
-                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
-                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
-                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k')
+                dict(data=io.BytesIO(b'test image 1'), filename='_1.k'),
+                dict(data=io.BytesIO(b'test image 2'), filename='_2.k'),
+                dict(data=io.BytesIO(b'test image 3'), filename='_3.k')
             ])
         )
 

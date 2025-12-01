@@ -5,8 +5,8 @@ from pyswagger import App
 from pyswagger.contrib.client.tornado import TornadoClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 import json
-import six
 import os
+import io
 
 
 sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
@@ -214,7 +214,7 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
 
         resp = yield self.client.request(
             sapp.op['uploadFile'](
-                additionalMetadata='a test file', file=dict(data=six.StringIO('a test Content'), filename='test.txt')),
+                additionalMetadata='a test file', file=dict(data=io.StringIO('a test Content'), filename='test.txt')),
             opt=dict(
                 url_netloc='localhost:'+str(self.get_http_port())
             ))
@@ -231,18 +231,18 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
         app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
         resp = yield self.client.request(
             app.op['upload_images'](images=[
-                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
-                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
-                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k'),
+                dict(data=io.BytesIO(b'test image 1'), filename='_1.k'),
+                dict(data=io.BytesIO(b'test image 2'), filename='_2.k'),
+                dict(data=io.BytesIO(b'test image 3'), filename='_3.k'),
             ]),
             opt=dict(
                 url_netloc='localhost:'+str(self.get_http_port())
             )
         )
 
-        self.assertEqual(received_files[0], {'body': six.b('test image 1'), 'content_type': 'application/unknown', 'filename': u'_1.k'})
-        self.assertEqual(received_files[1], {'body': six.b('test image 2'), 'content_type': 'application/unknown', 'filename': u'_2.k'})
-        self.assertEqual(received_files[2], {'body': six.b('test image 3'), 'content_type': 'application/unknown', 'filename': u'_3.k'})
+        self.assertEqual(received_files[0], {'body': b'test image 1', 'content_type': 'application/unknown', 'filename': u'_1.k'})
+        self.assertEqual(received_files[1], {'body': b'test image 2', 'content_type': 'application/unknown', 'filename': u'_2.k'})
+        self.assertEqual(received_files[2], {'body': b'test image 3', 'content_type': 'application/unknown', 'filename': u'_3.k'})
 
     @testing.gen_test
     def test_custom_headers(self):

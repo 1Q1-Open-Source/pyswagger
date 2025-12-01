@@ -4,13 +4,13 @@ from ..utils import deref, final, from_iso8601
 from decimal import Decimal
 import copy
 import random
-import six
 import sys
 import string
 import uuid
 import base64
 import datetime
 import time
+import io
 
 # TODO: patternProperties
 # TODO: pattern
@@ -36,7 +36,7 @@ def _int_(obj, _, val=None):
     min_ = min_+1 if obj.exclusiveMinimum else min_
 
     out = random.randint(min_, max_)
-    return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, six.integer_types) and obj.multipleOf != 0 else out
+    return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, int) and obj.multipleOf != 0 else out
 
 def _float_(obj, _, val=None):
     if val:
@@ -74,7 +74,7 @@ def _uuid_(obj, _, val=None):
 names = list(string.ascii_letters) + ['_', '-'] + list(string.digits)
 def _email_name_():
     return random.choice(string.ascii_letters) \
-    + ''.join([random.choice(names) for _ in six.moves.xrange(random.randint(1, 30))]) \
+    + ''.join([random.choice(names) for _ in range(random.randint(1, 30))]) \
     + random.choice(string.ascii_letters)
 
 def _email_(obj, _, val=None):
@@ -83,17 +83,17 @@ def _email_(obj, _, val=None):
 
     host_length = random.randint(2, 100)
     region_length = random.randint(2, 30)
-    return '.'.join([_email_name_() for _ in six.moves.xrange(random.randint(1, 4))]) \
+    return '.'.join([_email_name_() for _ in range(random.randint(1, 4))]) \
         + '@' \
         + random.choice(string.ascii_letters) \
-        + ''.join([random.choice(names) for _ in six.moves.xrange(host_length)]) \
+        + ''.join([random.choice(names) for _ in range(host_length)]) \
         + '.' \
         + random.choice(string.ascii_letters) \
-        + ''.join([random.choice(names) for _ in six.moves.xrange(region_length)])
+        + ''.join([random.choice(names) for _ in range(region_length)])
 
 def _byte_(obj, opt, val=None):
     return val if val else base64.b64encode(
-        six.b(''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))]))
+        (''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))])).encode('utf-8')
     )
 
 max_date = time.mktime(datetime.date(2038, 1, 19).timetuple())
@@ -119,8 +119,8 @@ def _file_(obj, opt, _):
             'Content-Transfer-Encoding': 'binary'
         },
         filename='',
-        data=six.moves.cStringIO(
-            ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_file_length']))])
+        data=io.BytesIO(
+            (''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_file_length']))])).encode('utf-8')
         )
     )
 
@@ -182,7 +182,7 @@ class Renderer(object):
             max_ = obj.maxProperties if obj.maxProperties else opt['max_prop_count']
             min_ = obj.minProperties if obj.minProperties else None
             count = 0
-            for name, prop in six.iteritems(obj.properties or {}):
+            for name, prop in (obj.properties or {}).items():
                 if name in template:
                     out[name] = template[name]
                     continue
@@ -199,10 +199,10 @@ class Renderer(object):
                 more = random.randint(min_, max_) - count
                 if more > 0:
                     # generate a random string as property-name
-                    for _ in six.moves.xrange(more):
+                    for _ in range(more):
                         while True:
                             length = random.randint(0, opt['max_name_length'])
-                            name = ''.join([random.choice(string.ascii_letters) for _ in six.moves.xrange(length)])
+                            name = ''.join([random.choice(string.ascii_letters) for _ in range(length)])
                             if name not in out:
                                 out[name] = self._generate(obj.additionalProperties, opt)
                                 break
@@ -211,7 +211,7 @@ class Renderer(object):
             min_ = obj.minItems if obj.minItems else 0
             max_ = obj.maxItems if obj.maxItems else opt['max_array_length']
             out = []
-            for _ in six.moves.xrange(random.randint(min_, max_)):
+            for _ in range(random.randint(min_, max_)):
                 out.append(self._generate(obj.items, opt))
 
         elif type_ != None:
@@ -291,7 +291,7 @@ class Renderer(object):
             return base
 
         # Accept both preset name and mapping for flexibility
-        if isinstance(preset, six.string_types):
+        if isinstance(preset, str):
             p = Renderer.PRESETS.get(preset)
             if p is None:
                 raise ValueError('Unknown preset: {0}'.format(preset))

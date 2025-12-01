@@ -3,7 +3,6 @@ from ...scan import Dispatcher
 from ...spec.v2_0.objects import (
     Operation
     )
-import six
 
 
 class YamlFixer(object):
@@ -18,8 +17,8 @@ class YamlFixer(object):
         if obj.responses == None: return 
 
         tmp = {}
-        for k, v in six.iteritems(obj.responses):
-            if isinstance(k, six.integer_types):
+        for k, v in obj.responses.items():
+            if isinstance(k, int):
                 tmp[str(k)] = v
             else:
                 tmp[k] = v

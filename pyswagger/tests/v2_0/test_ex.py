@@ -4,17 +4,17 @@ from ...utils import deref, final
 from ...spec.v2_0.parser import PathItemContext
 import unittest
 import os
-import six
+from urllib.parse import urlparse, urlunparse
 
 
 def _gen_hook(folder):
     def _hook(url):
-        p = six.moves.urllib.parse.urlparse(url)
+        p = urlparse(url)
         if p.scheme != 'file':
             return url
 
         path = os.path.join(folder, p.path if not p.path.startswith('/') else p.path[1:])
-        return six.moves.urllib.parse.urlunparse(p[:2]+(path,)+p[3:])
+        return urlunparse(p[:2]+(path,)+p[3:])
 
     return _hook
 

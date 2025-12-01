@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 import uuid
-import six
 from ..errs import ValidationError
 
 
@@ -23,7 +22,7 @@ class UUID(object):
         if isinstance(val, uuid.UUID):
             # Accept uuid.UUID directly; store as-is
             self.v = val
-        elif isinstance(val, six.string_types):
+        elif isinstance(val, str):
             # Enforce hyphenated RFC 4122 form to avoid accepting ambiguous/non-standard inputs
             s = val.strip()
             # quick shape check: 36 length with 4 hyphens at standard positions
@@ -33,7 +32,7 @@ class UUID(object):
                 self.v = uuid.UUID(s)
             except (ValueError, AttributeError, TypeError):
                 raise ValidationError('Invalid UUID string: {0}'.format(val))
-        elif isinstance(val, six.binary_type):
+        elif isinstance(val, (bytes, bytearray)):
             # TODO: how to support bytes_le?
             self.v = uuid.UUID(bytes=val)
         else:
