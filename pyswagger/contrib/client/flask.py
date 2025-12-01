@@ -33,7 +33,10 @@ class FlaskTestClient(BaseClient):
         req.prepare(scheme=self.prepare_schemes(req), handle_files=False)
         req._patch(opt)
 
-        composed_headers = self.compose_headers(req, headers, opt)
+        # For Flask/Werkzeug test client, pass headers as a dict so that
+        # duplicate header keys collapse with the last value winning by default.
+        # When opt['join_headers'] is True, compose_headers will join values with commas.
+        composed_headers = self.compose_headers(req, headers, opt, as_dict=True)
 
         # prepare data, flask's data is composed of form and file
         if req.files:

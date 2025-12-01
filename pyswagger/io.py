@@ -100,7 +100,8 @@ class Request(object):
         w = codecs.getwriter(encoding)
 
         def append(name, obj):
-            body.write(b'--{0}\r\n'.format(boundary).encode())
+            # boundary line (build as str then encode)
+            body.write(('--{0}\r\n'.format(boundary)).encode())
 
             # header
             w(body).write('Content-Disposition: form-data; name="{0}"; filename="{1}"'.format(name, obj.filename))
@@ -127,7 +128,8 @@ class Request(object):
             body.write(b'\r\n')
 
         for k, v in self.__p['formData']:
-            body.write(b'--{0}\r\n'.format(boundary).encode())
+            # boundary line for form field (build as str then encode)
+            body.write(('--{0}\r\n'.format(boundary)).encode())
 
             w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
             body.write(b'\r\n')
@@ -146,7 +148,8 @@ class Request(object):
                 append(k, v)
 
         # final boundary
-        body.write(b'--{0}--\r\n'.format(boundary).encode())
+        # final closing boundary (build as str then encode)
+        body.write(('--{0}--\r\n'.format(boundary)).encode())
 
         return content_type, body.getvalue()
 

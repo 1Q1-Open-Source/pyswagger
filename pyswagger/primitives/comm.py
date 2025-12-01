@@ -1,14 +1,19 @@
 from __future__ import absolute_import
 from ..errs import ValidationError
 import json
+import uuid
 
 
 class PrimJSONEncoder(json.JSONEncoder):
     """ json encoder for primitives
     """
     def default(self, obj):
+        # Support pyswagger primitives providing custom JSON conversion
         if hasattr(obj, 'to_json'):
             return obj.to_json()
+        # Serialize Python uuid.UUID instances to canonical string form
+        if isinstance(obj, uuid.UUID):
+            return str(obj)
         return json.JSONEncoder.default(self, obj)
 
 def min_max(obj, val, is_max):

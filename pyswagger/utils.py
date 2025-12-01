@@ -131,8 +131,9 @@ _iso8601_fmt = re.compile(''.join([
     r'T',  # T
     r'(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2})(\.(?P<microsecond>\d{1,6}))?)?',  # hh:mm:ss.ms
     r'(?P<tz>Z|[+-]\d{2}:\d{2})?',  # Z or +/-hh:mm
+    r'$'
 ]))
-_iso8601_fmt_date = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})')  # YYYY-MM-DD
+_iso8601_fmt_date = re.compile(r'(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})$')  # YYYY-MM-DD
 
 def from_iso8601(s):
     """ convert iso8601 string to datetime object.
@@ -142,6 +143,7 @@ def from_iso8601(s):
     :param str s: time in ISO-8601
     :rtype: datetime.datetime
     """
+    # Require full-string match to avoid accepting prefixes like date-only when extra content exists
     m = _iso8601_fmt.match(s)
     if not m:
         m = _iso8601_fmt_date.match(s)
